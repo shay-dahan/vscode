@@ -5,12 +5,21 @@ on:
     branches:
       - main
       - 'release/*'
+  workflow_dispatch:
+    inputs:
+      fastci:
+        description: 'Run FastCI integration'
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  contents: read
+  actions: read
 
 env:
   VSCODE_QUALITY: 'oss'
@@ -22,6 +31,12 @@ jobs:
     steps:
       - name: Checkout microsoft/vscode
         uses: actions/checkout@v4
+      - name: FastCI
+        if: ${{ fromJSON(github.event.inputs.fastci || 'false') }}
+        uses: jfrog-fastci/fastci@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ vars.FASTCI_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
