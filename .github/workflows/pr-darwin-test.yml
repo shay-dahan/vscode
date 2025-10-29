@@ -13,6 +13,16 @@ on:
       remote_tests:
         type: boolean
         default: false
+  workflow_dispatch:
+    inputs:
+      fastci:
+        type: boolean
+        default: false
+        description: 'Enable FastCI integration'
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   macOS-test:
@@ -25,6 +35,12 @@ jobs:
     steps:
       - name: Checkout microsoft/vscode
         uses: actions/checkout@v4
+      - name: FastCI
+        if: ${{ fromJSON(github.event.inputs.fastci || 'false') }}
+        uses: jfrog-fastci/fastci@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ vars.FASTCI_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -127,17 +143,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🧪 Run unit tests (Electron)
+      - name: ðŸ§ª Run unit tests (Electron)
         if: ${{ inputs.electron_tests }}
         timeout-minutes: 15
         run: ./scripts/test.sh --tfs "Unit Tests"
 
-      - name: 🧪 Run unit tests (node.js)
+      - name: ðŸ§ª Run unit tests (node.js)
         if: ${{ inputs.electron_tests }}
         timeout-minutes: 15
         run: npm run test-node
 
-      - name: 🧪 Run unit tests (Browser, Webkit)
+      - name: ðŸ§ª Run unit tests (Browser, Webkit)
         if: ${{ inputs.browser_tests }}
         timeout-minutes: 30
         run: npm run test-browser-no-install -- --browser webkit --tfs "Browser Unit Tests"
@@ -166,17 +182,17 @@ jobs:
             compile-extension:vscode-colorize-perf-tests \
             compile-extension:vscode-test-resolver
 
-      - name: 🧪 Run integration tests (Electron)
+      - name: ðŸ§ª Run integration tests (Electron)
         if: ${{ inputs.electron_tests }}
         timeout-minutes: 20
         run: ./scripts/test-integration.sh --tfs "Integration Tests"
 
-      - name: 🧪 Run integration tests (Browser, Webkit)
+      - name: ðŸ§ª Run integration tests (Browser, Webkit)
         if: ${{ inputs.browser_tests }}
         timeout-minutes: 20
         run: ./scripts/test-web-integration.sh --browser webkit
 
-      - name: 🧪 Run integration tests (Remote)
+      - name: ðŸ§ª Run integration tests (Remote)
         if: ${{ inputs.remote_tests }}
         timeout-minutes: 20
         run: ./scripts/test-remote-integration.sh
@@ -193,17 +209,17 @@ jobs:
         continue-on-error: true
         if: always()
 
-      - name: 🧪 Run smoke tests (Electron)
+      - name: ðŸ§ª Run smoke tests (Electron)
         if: ${{ inputs.electron_tests }}
         timeout-minutes: 20
         run: npm run smoketest-no-compile -- --tracing
 
-      - name: 🧪 Run smoke tests (Browser, Chromium)
+      - name: ðŸ§ª Run smoke tests (Browser, Chromium)
         if: ${{ inputs.browser_tests }}
         timeout-minutes: 20
         run: npm run smoketest-no-compile -- --web --tracing --headless
 
-      - name: 🧪 Run smoke tests (Remote)
+      - name: ðŸ§ª Run smoke tests (Remote)
         if: ${{ inputs.remote_tests }}
         timeout-minutes: 20
         run: npm run smoketest-no-compile -- --remote --tracing
